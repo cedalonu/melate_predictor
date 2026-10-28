@@ -5,6 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: '/melate_predictor/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
