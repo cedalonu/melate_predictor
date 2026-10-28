@@ -1,0 +1,37 @@
+name: Auto Sync Melate Results
+
+on:
+  schedule:
+    # Melate draws: Wednesday, Friday, Sunday at 21:00 CST (Centro de México).
+    # 1.5 hours later is 22:30 CST (03:30 / 04:30 UTC).
+    - cron: '30 3 * * 1,4,6' # Lunes, Jueves, Sábado a las 03:30 UTC (cubre los sorteos de dom, mié, vie)
+  workflow_dispatch: # Permite ejecución manual desde GitHub Actions
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Verify CSV Source & Build
+        run: |
+          echo "Verificando actualización del archivo Melate.csv..."
+          curl -sI https://raw.githubusercontent.com/pakinja/pakin/refs/heads/master/Melate.csv
+          npm run build
+
+      - name: Commit & Push if updated
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-sync: Actualización automática de resultados Melate"
+          branch: master
+          create_branch_if_not_exists: false
