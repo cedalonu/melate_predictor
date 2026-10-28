@@ -630,13 +630,13 @@ export default function App() {
       {/* WhatsApp Community Bar */}
       <div className="w-full bg-[#0a0a0a] flex justify-center py-3 border-b border-[#1e1e1e]">
         <a 
-          href="https://chat.whatsapp.com/" 
+          href="https://chat.whatsapp.com/C6FlHjEjcJtCq94nKIQdPL" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="border border-[#25d366]/50 bg-[#24d064] text-[#f0f5f2] rounded-full px-4 py-1.5 text-xs font-bold flex items-center gap-2 hover:bg-[#20ba59] transition-all shadow-[0_0_15px_rgba(37,211,102,0.3)]"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          Unidos contra Melate - Grupo WhatsApp
+          Grupo WhatsApp
         </a>
       </div>
 
@@ -644,7 +644,7 @@ export default function App() {
         {/* Header */}
         <div className="text-center my-6">
           <h1 className="text-3xl sm:text-5xl font-black text-[#ffeb3b] drop-shadow-[0_0_15px_rgba(255,235,59,0.8)] tracking-tight">
-            MELATE PREDICTOR <span className="text-[#00e5ff] drop-shadow-[0_0_15px_rgba(0,229,255,0.8)]">V4 ML</span>
+            ESTRELLAS DEL <span className="text-[#00e5ff] drop-shadow-[0_0_15px_rgba(0,229,255,0.8)]">MELATE</span>
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 mt-2">
             Sistema avanzado para Melate (6 de 56) con Fase 2 de Backtesting y Optimización de Hiperparámetros.

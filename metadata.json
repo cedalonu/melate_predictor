@@ -1,5 +1,5 @@
 {
-  "name": "MELATE PREDICTOR V4 ML",
+  "name": "Estrellas del Melate",
   "description": "Sistema avanzado de predicción para Melate (6 de 56) con pools ML, wheelings reducidos, filtros de calidad y registro histórico inmutable.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
