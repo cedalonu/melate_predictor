@@ -379,21 +379,12 @@ function runPoolScorecard(draws: typeof INITIAL_MELATE_DRAWS, params: MLParamete
     const pct4Plus = s.count > 0 ? ((s.hits4Plus / s.count) * 100).toFixed(1) : '0';
     return {
       id,
-      <div className="p-4 bg-[#111] border border-[#333] rounded-xl mb-4">
-  <b className="text-white">➕ Agregar Sorteo Nuevo</b>
-  <div className="flex flex-wrap gap-2 mt-2">
-    <input type="number" value={newNum} onChange={e=>setNewNum(parseInt(e.target.value))} className="bg-black text-white p-2 rounded w-24" placeholder="N°" />
-    <input type="text" value={newDate} onChange={e=>setNewDate(e.target.value)} className="bg-black text-white p-2 rounded w-32" placeholder="Fecha 12/11/2026" />
-    <input type="text" value={newWin} onChange={e=>setNewWin(e.target.value)} className="bg-black text-white p-2 rounded flex-1" placeholder="Ganadores: 7,14,22,35,41,52" />
-    <input type="number" value={newAdd} onChange={e=>setNewAdd(e.target.value)} className="bg-black text-white p-2 rounded w-24" placeholder="Adic." />
-    <button onClick={addDraw} className="bg-[#00e676] text-black px-4 py-2 rounded-full font-black">AGREGAR</button>
-  </div>
-  <label className="text-xs text-gray-400 mt-2 block">O importar CSV (num,fecha,n1,n2,n3,n4,n5,n6,adicional): <input type="file" accept=".csv" onChange={importCSV} className="text-white" /></label>
-</div>
-      name: id === 'final' ? 'Pool FINAL' : id.toUpperCase(),
-      avgHits: avg,
-      pct4Plus
-    };
+return {
+  id,
+  name: id === 'final' ? 'Pool FINAL' : id.toUpperCase(),
+  avgHits: avg,
+  pct4Plus
+};
   });
 }
 
