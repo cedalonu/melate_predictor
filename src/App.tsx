@@ -379,6 +379,17 @@ function runPoolScorecard(draws: typeof INITIAL_MELATE_DRAWS, params: MLParamete
     const pct4Plus = s.count > 0 ? ((s.hits4Plus / s.count) * 100).toFixed(1) : '0';
     return {
       id,
+      <div className="p-4 bg-[#111] border border-[#333] rounded-xl mb-4">
+  <b className="text-white">➕ Agregar Sorteo Nuevo</b>
+  <div className="flex flex-wrap gap-2 mt-2">
+    <input type="number" value={newNum} onChange={e=>setNewNum(parseInt(e.target.value))} className="bg-black text-white p-2 rounded w-24" placeholder="N°" />
+    <input type="text" value={newDate} onChange={e=>setNewDate(e.target.value)} className="bg-black text-white p-2 rounded w-32" placeholder="Fecha 12/11/2026" />
+    <input type="text" value={newWin} onChange={e=>setNewWin(e.target.value)} className="bg-black text-white p-2 rounded flex-1" placeholder="Ganadores: 7,14,22,35,41,52" />
+    <input type="number" value={newAdd} onChange={e=>setNewAdd(e.target.value)} className="bg-black text-white p-2 rounded w-24" placeholder="Adic." />
+    <button onClick={addDraw} className="bg-[#00e676] text-black px-4 py-2 rounded-full font-black">AGREGAR</button>
+  </div>
+  <label className="text-xs text-gray-400 mt-2 block">O importar CSV (num,fecha,n1,n2,n3,n4,n5,n6,adicional): <input type="file" accept=".csv" onChange={importCSV} className="text-white" /></label>
+</div>
       name: id === 'final' ? 'Pool FINAL' : id.toUpperCase(),
       avgHits: avg,
       pct4Plus
@@ -387,7 +398,21 @@ function runPoolScorecard(draws: typeof INITIAL_MELATE_DRAWS, params: MLParamete
 }
 
 export default function App() {
-  const [draws, setDraws] = useState<typeof INITIAL_MELATE_DRAWS>(INITIAL_MELATE_DRAWS);
+  const [draws, setDraws] = useState<typeof INITIAL_MELATE_DRAWS>(() => {
+  try {
+    const saved = localStorage.getItem('melate_draws_v4');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch(e) {}
+  return INITIAL_MELATE_DRAWS;
+});
+
+// Guardar cada que cambian los sorteos
+useEffect(() => {
+  try { localStorage.setItem('melate_draws_v4', JSON.stringify(draws)); } catch(e) {}
+}, [draws]);
   const [activeModal, setActiveModal] = useState<{ type: string; poolId?: string; k?: number; sorteoNum?: number } | null>(null);
   const [chartVisibility, setChartVisibility] = useState<Record<string, boolean>>({
     final: true, p2: true, p3: true, p4: true, p5: true, p6: true, p7: true
@@ -395,7 +420,41 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const safeDraws = (draws && draws.length > 0) ? draws : INITIAL_MELATE_DRAWS;
-  
+  const [newNum, setNewNum] = useState(3911);
+const [newDate, setNewDate] = useState('');
+const [newWin, setNewWin] = useState('');
+const [newAdd, setNewAdd] = useState('');
+
+const addDraw = () => {
+  const win = newWin.split(/[\s,;-]+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  const add = parseInt(newAdd);
+  if (win.length !== 6) return alert('Pon 6 números ganadores separados por coma. Ej: 7,14,22,35,41,52');
+  if (new Set(win).size !== 6) return alert('No repitas números');
+  if (win.some(n => n < 1 || n > 56)) return alert('Números del 1 al 56');
+  if (isNaN(add) || add < 1 || add > 56) return alert('Pon el adicional del 1 al 56');
+  if (draws.some(d => d.num === newNum)) return alert('Ese sorteo ya existe');
+  const sorted = [...win].sort((a,b) => a-b);
+  setDraws(prev => [{ num: newNum, win: sorted, additional: add, date: newDate || new Date().toLocaleDateString('es-MX') }, ...prev]);
+  setNewNum(newNum + 1); setNewWin(''); setNewAdd('');
+  alert('Sorteo ' + newNum + ' agregado y guardado');
+};
+
+const importCSV = (e: any) => {
+  const file = e.target.files?.[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const lines = String(reader.result).split('\n').slice(1);
+      const parsed = lines.map(l => {
+        const [num, d, w1,w2,w3,w4,w5,w6, add] = l.split(',');
+        return { num: parseInt(num), date: d, win: [w1,w2,w3,w4,w5,w6].map(Number).sort((a,b)=>a-b), additional: parseInt(add) };
+      }).filter(d => !isNaN(d.num) && d.win.length === 6);
+      setDraws(prev => [...parsed, ...prev].sort((a,b)=>b.num-a.num));
+      alert(parsed.length + ' sorteos importados');
+    } catch(err) { alert('Error en CSV'); }
+  };
+  reader.readAsText(file);
+};
   const [params, setParams] = useState<MLParameters>(() => {
     const saved = localStorage.getItem('melate_ml_params');
     if (saved) {
