@@ -379,8 +379,6 @@ function runPoolScorecard(draws: typeof INITIAL_MELATE_DRAWS, params: MLParamete
     const pct4Plus = s.count > 0 ? ((s.hits4Plus / s.count) * 100).toFixed(1) : '0';
     return {
       id,
-return {
-  id,
   name: id === 'final' ? 'Pool FINAL' : id.toUpperCase(),
   avgHits: avg,
   pct4Plus
