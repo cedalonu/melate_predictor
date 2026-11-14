@@ -80,6 +80,128 @@ function EfficiencyReportModal({ simResults, onClose }: { simResults: any[]; onC
     );
 }
 
+function ContourGraphModal({ pool, allDraws, onClose }: { pool: { id: string; label: string; nums: number[]; border: string; accent: string }; allDraws: Draw[]; onClose: () => void }) {
+    const last20 = React.useMemo(() => {
+        if (!allDraws || allDraws.length === 0) return [];
+        return allDraws.slice(-20);
+    }, [allDraws]);
+
+    const cellHitsMap = React.useMemo(() => {
+        const map: Record<number, number> = {};
+        for (let n = 1; n <= 56; n++) {
+            let hits = 0;
+            last20.forEach(d => {
+                if (d.win && d.win.includes(n)) hits++;
+            });
+            map[n] = hits;
+        }
+        return map;
+    }, [last20]);
+
+    const gridRows = [0, 1, 2, 3, 4, 5, 6, 7];
+    const gridCols = [0, 1, 2, 3, 4, 5, 6];
+
+    const getZColor = (z: number) => {
+        if (z <= 0) return '#00bcd4';
+        if (z <= 1) return '#00e5ff';
+        if (z <= 2) return '#76ff03';
+        if (z <= 3) return '#aeea00';
+        if (z <= 4) return '#ffeb3b';
+        if (z <= 5) return '#ff9800';
+        if (z <= 6) return '#ff5722';
+        return '#f50057';
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-[3px] z-[9999] flex items-center justify-center p-3 overflow-y-auto" onClick={onClose}>
+            <div className="bg-[#121212] border border-[#333] rounded-2xl w-full max-w-[900px] p-5 flex flex-col shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-start mb-4 pb-3 border-b border-[#2a2a2a]">
+                    <div>
+                        <div className="text-[15px] font-black text-[#ffeb3b] flex items-center gap-2">
+                            <span>🏔️</span> Gráfica de Contorno Z — <span style={{ color: pool.accent }}>{pool.label}</span>
+                        </div>
+                        <div className="text-[10px] text-[#888] mt-0.5">Ejes X, Y: Coordenadas de casilla · Eje Z: Incidencia de aciertos (ganador en últimos 20 sorteos)</div>
+                    </div>
+                    <button onClick={onClose} className="bg-[#1f1f1f] text-[#aaa] border border-[#333] hover:text-white w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold cursor-pointer transition">✕</button>
+                </div>
+
+                <div className="bg-[#181818] border border-[#2a2a2a] rounded-xl p-4 relative overflow-x-auto">
+                    <div className="min-w-[700px]">
+                        <div className="grid grid-cols-7 gap-2 mb-2 text-center">
+                            {gridCols.map(c => (
+                                <div key={c} className="text-[10px] font-mono font-bold text-[#888]">X:{c}</div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-2">
+                            {gridRows.map(row => (
+                                <div key={row} className="flex items-center gap-2">
+                                    <div className="w-8 text-[10px] font-mono font-bold text-[#888]">Y:{row}</div>
+                                    <div className="grid grid-cols-7 gap-2 flex-1">
+                                        {gridCols.map(col => {
+                                            const n = row * 7 + col + 1;
+                                            const z = cellHitsMap[n] || 0;
+                                            const isPoolNum = pool.nums.includes(n);
+                                            const bgColor = getZColor(z);
+                                            return (
+                                                <div 
+                                                    key={n}
+                                                    className="relative rounded-xl p-2.5 h-[68px] flex flex-col items-center justify-center transition-all shadow-inner"
+                                                    style={{ 
+                                                        backgroundColor: bgColor,
+                                                        opacity: isPoolNum ? 1 : 0.45,
+                                                        border: isPoolNum ? '2px solid #ffeb3b' : '1px solid rgba(255,255,255,0.15)'
+                                                    }}
+                                                    title={`Número ${String(n).padStart(2, '0')} (X:${col}, Y:${row}) — Z: ${z} aciertos ${isPoolNum ? '[EN EL POOL]' : ''}`}
+                                                >
+                                                    {isPoolNum ? (
+                                                        <div className="w-9 h-9 rounded-full bg-black border-2 border-[#ffeb3b] flex items-center justify-center shadow-lg">
+                                                            <span className="text-[13px] font-black text-white">{String(n).padStart(2, '0')}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center">
+                                                            <span className="text-[12px] font-black text-black/95">{String(n).padStart(2, '0')}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-4 bg-[#181818] border border-[#2a2a2a] rounded-xl p-3 space-y-2">
+                    <div className="flex justify-between items-center text-[11px]">
+                        <span className="font-bold text-[#ffeb3b]">Escala de Color Z (Aciertos en 20 Sorteos):</span>
+                        <span className="font-mono text-[#00e5ff] text-[10px]">Mín: 0 ac. → Máx: 7 ac.</span>
+                    </div>
+
+                    <div className="h-4 rounded-lg w-full overflow-hidden flex" style={{ background: 'linear-gradient(90deg, #00bcd4 0%, #00e5ff 20%, #76ff03 40%, #ffeb3b 60%, #ff9800 80%, #f50057 100%)' }}></div>
+
+                    <div className="flex justify-between text-[9px] text-[#aaa] font-mono px-1">
+                        <span>0 ac.</span>
+                        <span>1 ac.</span>
+                        <span>3 ac.</span>
+                        <span>4 ac.</span>
+                        <span>6 ac.</span>
+                        <span>7 ac.</span>
+                    </div>
+                </div>
+
+                <div className="mt-4 flex justify-end items-center">
+                    <button onClick={onClose} className="bg-[#7c4dff] text-white hover:bg-[#683de0] px-6 py-2 rounded-xl text-[12px] font-black cursor-pointer shadow-lg transition">
+                        Cerrar Gráfica
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
 
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
@@ -708,6 +830,7 @@ export default function App() {
     // Modal states
     const [modalConfig, setModalConfig] = useState<any>(null); // { type: 'wheeling' | 'cell' | 'backtest', ... }
     const [showLabModal, setShowLabModal] = useState(false);
+    const [contourPool, setContourPool] = useState<any | null>(null);
     
     // Chart visibility state
     const [chartVisibility, setChartVisibility] = useState<Record<string, boolean>>({
@@ -1111,7 +1234,7 @@ export default function App() {
                                     </div>
                                     <div className="mt-1.5">
                                         <span className="text-[9px] text-[#ffeb3b]">● WHEELINGS {p.id !== 'anti' ? 'Sistemas Reducidos con Filtros de Calidad' : 'No aplica'}</span>
-                                        <div className="flex gap-1.5 flex-wrap mt-1">
+                                        <div className="flex gap-1.5 flex-wrap mt-1 items-center">
                                             {p.wheelings.length > 0 ? p.wheelings.map((w: any) => {
                                                 let label = uv(w.k) + ' comb';
                                                 return (
@@ -1120,6 +1243,14 @@ export default function App() {
                                                     </button>
                                                 );
                                             }) : <span className="text-[9px] text-[#666]">No aplica wheeling</span>}
+                                            <button 
+                                                onClick={() => setContourPool(p)} 
+                                                className="rounded-full px-2.5 py-1 text-[10px] font-extrabold cursor-pointer border transition hover:opacity-85 flex items-center gap-1" 
+                                                style={{ borderColor: `${p.border}88`, background: `${p.border}22`, color: p.accent }}
+                                                title="Ver Gráfica de Contorno 2D (Ejes X, Y, Z - Aciertos en 20 Sorteos)"
+                                            >
+                                                📈 Contorno
+                                            </button>
                                         </div>
                                         <div className="font-mono text-[8px] text-[#666] mt-1 leading-[1.3]">{p.desc}</div>
                                     </div>
@@ -1369,6 +1500,10 @@ export default function App() {
 
             {showLabModal && (
                 <LabModal allDraws={allDraws} onClose={() => setShowLabModal(false)} />
+            )}
+
+            {contourPool && (
+                <ContourGraphModal pool={contourPool} allDraws={allDraws} onClose={() => setContourPool(null)} />
             )}
         </div>
     );
@@ -2108,12 +2243,14 @@ function getOptimalCheckboxes(poolList: { id: string; nums: number[] }[], win: n
         ['final', 'p2', 'p3', 'p4', 'p5', 'p6'],
         ['final', 'p2', 'p4', 'p5', 'p6'],
         ['final', 'p2', 'p3', 'p4'],
-        ['final', 'p2', 'p4']
+        ['final', 'p2', 'p4'],
+        ['final', 'p3', 'p4']
     ];
 
     const candidateFreqSets: Record<number, boolean>[] = [
+        { 7: false, 6: true, 5: true, 4: true, 3: false, 2: false, 1: false, 0: false },
+        { 7: false, 6: false, 5: true, 4: true, 3: true, 2: false, 1: false, 0: false },
         { 7: false, 6: true, 5: true, 4: true, 3: true, 2: true, 1: true, 0: false },
-        { 7: false, 6: false, 5: true, 4: true, 3: true, 2: true, 1: true, 0: false },
         { 7: false, 6: false, 5: false, 4: true, 3: true, 2: true, 1: true, 0: false },
         { 7: false, 6: true, 5: false, 4: true, 3: false, 2: false, 1: true, 0: false },
         { 7: true, 6: true, 5: true, 4: true, 3: true, 2: true, 1: true, 0: false }
@@ -2125,7 +2262,7 @@ function getOptimalCheckboxes(poolList: { id: string; nums: number[] }[], win: n
     };
 
     let bestHits = -1;
-    let minCountForBestHits = Infinity;
+    let minCount = Infinity;
 
     candidatePoolCombos.forEach(pCombo => {
         let poolsMap: Record<string, boolean> = { final: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false };
@@ -2149,48 +2286,17 @@ function getOptimalCheckboxes(poolList: { id: string; nums: number[] }[], win: n
             let hits = win.filter(w => filtered.includes(w)).length;
             let count = filtered.length;
 
-            if (count > 0 && count <= 56) {
-                if (hits === win.length) {
-                    if (count < minCountForBestHits) {
-                        minCountForBestHits = count;
+            if (count >= 5 && count <= 45) {
+                if (hits > bestHits || (hits === bestHits && count < minCount)) {
+                    if (hits >= 5 || bestHits < 5) {
                         bestHits = hits;
+                        minCount = count;
                         bestConfig = { pools: poolsMap, freqs: fSet };
                     }
-                } else if (hits > bestHits && bestHits < win.length) {
-                    bestHits = hits;
-                    minCountForBestHits = count;
-                    bestConfig = { pools: poolsMap, freqs: fSet };
                 }
             }
         });
     });
-
-    // Guarantee all 7 winning numbers are captured
-    let activeObjs = poolList.filter(p => bestConfig.pools[p.id]);
-    let freqMap: Record<number, number> = {};
-    activeObjs.forEach(p => {
-        p.nums.forEach(n => {
-            freqMap[n] = (freqMap[n] || 0) + 1;
-        });
-    });
-
-    let currentFiltered: number[] = [];
-    for (let n = 1; n <= 56; n++) {
-        let f = freqMap[n] || 0;
-        if (bestConfig.freqs[f]) currentFiltered.push(n);
-    }
-
-    let currentHits = win.filter(w => currentFiltered.includes(w)).length;
-    if (currentHits < win.length) {
-        let dynamicFreqs: Record<number, boolean> = { 7: false, 6: false, 5: false, 4: false, 3: false, 2: false, 1: false, 0: false };
-        win.forEach(w => {
-            let f = freqMap[w] || 0;
-            if (f >= 0 && f <= 7) dynamicFreqs[f] = true;
-        });
-        dynamicFreqs[4] = true;
-        dynamicFreqs[1] = true;
-        bestConfig.freqs = dynamicFreqs;
-    }
 
     return bestConfig;
 }
