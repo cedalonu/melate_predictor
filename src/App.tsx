@@ -88,18 +88,22 @@ function ContourGraphModal({ pool, allDraws, onClose }: { pool: { id: string; la
 
     const cellHitsMap = React.useMemo(() => {
         const map: Record<number, number> = {};
-        for (let n = 1; n <= 56; n++) {
-            let hits = 0;
-            last20.forEach(d => {
-                if (d.win && d.win.includes(n)) hits++;
+        if (pool && pool.nums) {
+            pool.nums.forEach(n => {
+                let hits = 0;
+                last20.forEach(d => {
+                    if (d.win && d.win.includes(n)) hits++;
+                });
+                map[n] = hits;
             });
-            map[n] = hits;
         }
         return map;
-    }, [last20]);
+    }, [last20, pool]);
 
-    const gridRows = [0, 1, 2, 3, 4, 5, 6, 7];
+    const poolNums = pool?.nums || [];
     const gridCols = [0, 1, 2, 3, 4, 5, 6];
+    const totalRows = Math.ceil(poolNums.length / 7);
+    const gridRows = Array.from({ length: totalRows }, (_, i) => i);
 
     const getZColor = (z: number) => {
         if (z <= 0) return '#00bcd4';
@@ -118,9 +122,9 @@ function ContourGraphModal({ pool, allDraws, onClose }: { pool: { id: string; la
                 <div className="flex justify-between items-start mb-4 pb-3 border-b border-[#2a2a2a]">
                     <div>
                         <div className="text-[15px] font-black text-[#ffeb3b] flex items-center gap-2">
-                            <span>🏔️</span> Gráfica de Contorno Z — <span style={{ color: pool.accent }}>{pool.label}</span>
+                            <span>🏔️</span> Gráfica de Contorno Z — <span style={{ color: pool.accent }}>{pool.label}</span> ({poolNums.length} números)
                         </div>
-                        <div className="text-[10px] text-[#888] mt-0.5">Ejes X, Y: Coordenadas de casilla · Eje Z: Incidencia de aciertos (ganador en últimos 20 sorteos)</div>
+                        <div className="text-[10px] text-[#888] mt-0.5">Ejes X (0–6), Y (0–{totalRows - 1}): Coordenadas de los números del pool · Eje Z: Incidencia de aciertos en últimos 20 sorteos.</div>
                     </div>
                     <button onClick={onClose} className="bg-[#1f1f1f] text-[#aaa] border border-[#333] hover:text-white w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold cursor-pointer transition">✕</button>
                 </div>
@@ -139,30 +143,23 @@ function ContourGraphModal({ pool, allDraws, onClose }: { pool: { id: string; la
                                     <div className="w-8 text-[10px] font-mono font-bold text-[#888]">Y:{row}</div>
                                     <div className="grid grid-cols-7 gap-2 flex-1">
                                         {gridCols.map(col => {
-                                            const n = row * 7 + col + 1;
+                                            const idx = row * 7 + col;
+                                            if (idx >= poolNums.length) {
+                                                return <div key={col} className="opacity-0 h-[68px]"></div>;
+                                            }
+                                            const n = poolNums[idx];
                                             const z = cellHitsMap[n] || 0;
-                                            const isPoolNum = pool.nums.includes(n);
                                             const bgColor = getZColor(z);
                                             return (
                                                 <div 
                                                     key={n}
-                                                    className="relative rounded-xl p-2.5 h-[68px] flex flex-col items-center justify-center transition-all shadow-inner"
-                                                    style={{ 
-                                                        backgroundColor: bgColor,
-                                                        opacity: isPoolNum ? 1 : 0.45,
-                                                        border: isPoolNum ? '2px solid #ffeb3b' : '1px solid rgba(255,255,255,0.15)'
-                                                    }}
-                                                    title={`Número ${String(n).padStart(2, '0')} (X:${col}, Y:${row}) — Z: ${z} aciertos ${isPoolNum ? '[EN EL POOL]' : ''}`}
+                                                    className="relative rounded-xl p-2.5 h-[68px] flex flex-col items-center justify-center transition-all shadow-inner border-2 border-[#ffeb3b]"
+                                                    style={{ backgroundColor: bgColor }}
+                                                    title={`Número ${String(n).padStart(2, '0')} (X:${col}, Y:${row}) — Z: ${z} aciertos (En el Pool)`}
                                                 >
-                                                    {isPoolNum ? (
-                                                        <div className="w-9 h-9 rounded-full bg-black border-2 border-[#ffeb3b] flex items-center justify-center shadow-lg">
-                                                            <span className="text-[13px] font-black text-white">{String(n).padStart(2, '0')}</span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-center">
-                                                            <span className="text-[12px] font-black text-black/95">{String(n).padStart(2, '0')}</span>
-                                                        </div>
-                                                    )}
+                                                    <div className="w-9 h-9 rounded-full bg-black border-2 border-[#ffeb3b] flex items-center justify-center shadow-lg">
+                                                        <span className="text-[13px] font-black text-white">{String(n).padStart(2, '0')}</span>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
