@@ -6678,12 +6678,7 @@ ${breakdownRows30.slice(20).join('\n')}
                             >
                                 🗑️ Limpiar Configs
                             </button>
-                            <button 
-                                onClick={() => setActiveTab('simulator')} 
-                                className={`px-3 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition ${activeTab === 'simulator' ? 'bg-[#7c4dff] text-white shadow-sm' : 'bg-[#222] text-[#aaa] hover:text-white'}`}
-                            >
-                                🔬 Simulación por Iteraciones
-                            </button>
+
                             <button 
                                 onClick={() => setActiveTab('simulatorC')} 
                                 className={`px-3 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition ${activeTab === 'simulatorC' ? 'bg-[#7c4dff] text-white shadow-sm' : 'bg-[#222] text-[#aaa] hover:text-white'}`}
@@ -6696,12 +6691,7 @@ ${breakdownRows30.slice(20).join('\n')}
                             >
                                 📜 TESIS 28
                             </button>
-                            <button 
-                                onClick={() => { setActiveTab('gemini'); if (!geminiRanking && !geminiTraining) runGemini(); }} 
-                                className={`px-3 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${activeTab === 'gemini' ? 'bg-[#7c4dff] text-white shadow-sm' : 'bg-[#222] text-[#aaa] hover:text-white'}`}
-                            >
-                                🤖 Gemini
-                            </button>
+
                             <button 
                                 onClick={() => setActiveTab('comparativa')} 
                                 className={`px-3 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${activeTab === 'comparativa' ? 'bg-[#7c4dff] text-white shadow-sm' : 'bg-[#222] text-[#aaa] hover:text-white'}`}
